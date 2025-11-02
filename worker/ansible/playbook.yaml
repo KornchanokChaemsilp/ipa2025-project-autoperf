@@ -1,0 +1,25 @@
+---
+- hosts: all
+  become: yes # ขอสิทธิ์ sudo
+  gather_facts: no # ไม่ต้องเสียเวลารวบรวมข้อมูลเครื่อง
+
+  tasks:
+    - name: 1. Install iperf3
+      ansible.builtin.apt:
+        name: iperf3
+        state: present
+        update_cache: yes
+      # หมายเหตุ: playbook นี้ใช้ได้กับ Debian/Ubuntu (apt) เท่านั้น
+      # ถ้าจะรองรับ CentOS ต้องเพิ่ม Task สำหรับ 'yum'
+      # และใช้ 'ansible_facts' เพื่อเช็ค OS ก่อน
+
+    - name: 2. Kill any old iperf3 server
+      # '|| true' เพื่อป้องกัน playbook ล่ม ถ้าไม่มี iperf3 รันอยู่
+      ansible.builtin.shell: "pkill iperf3 || true"
+      changed_when: false # ไม่ต้องรายงานว่า "changed"
+      ignore_errors: yes # ไม่ต้องสนว่า pkill จะ error ไหม
+
+    - name: 3. Start iperf3 server in background (-D)
+      ansible.builtin.shell: "iperf3 -s -D"
+      changed_when: false
+
