@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AutoPerf Project</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        form { margin-bottom: 2em; }
+        ul { list-style: none; padding: 0; }
+        li { background: #f4f4f4; margin: 5px; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        /* Style สำหรับฟอร์ม Delete ให้แสดงในบรรทัดเดียว */
+        form.delete-form { 
+            display: inline; 
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>AutoPerf - Network Performance Tester</h1>
+
+    <form method="POST" action="/add">
+        <input name="ip_address" placeholder="ป้อน IP Address เป้าหมาย" required />
+        <button type="submit">เพิ่มเป้าหมาย และเริ่มทดสอบ</button>
+    </form>
+
+    <hr>
+
+    <h2>ผลการทดสอบ (ดึงจาก Database)</h2>
+    <ul>
+        {% for result in results %}
+            <li>
+                <div>
+                    <strong>IP:</strong> 
+                    <a href="{{ url_for('show_detail', target_ip=result.ip) }}">
+                        {{ result.ip }}
+                    </a> | 
+                    <strong>Status:</strong> {{ result.status }} | 
+                    <strong>Bandwidth:</strong> {{ result.bandwidth }}
+                </div>
+                
+                <form method="POST" action="/delete" class="delete-form">
+                    <input type="hidden" name="ip_to_delete" value="{{ result.ip }}">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
