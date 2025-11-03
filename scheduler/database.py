@@ -1,39 +1,32 @@
-import os
+import config # Import config ของ scheduler เอง
 from pymongo import MongoClient
 
-# อ่านค่า Config ที่ส่งมาจาก docker-compose
-MONGO_URI = os.environ.get("MONGO_URI")
-DB_NAME = os.environ.get("DB_NAME")
-
-# ตรวจสอบว่ามี MONGO_URI หรือไม่
-if not MONGO_URI:
-    print("!!! [Error] ไม่พบ MONGO_URI")
-    # (ควรจะ exit)
-if not DB_NAME:
-    print("!!! [Error] ไม่พบ DB_NAME")
-    # (ควรจะ exit)
-
-# เชื่อมต่อ MongoDB
+# 1. เชื่อมต่อ MongoDB โดยใช้ URI จาก config
 try:
-    client = MongoClient(MONGO_URI)
-    db = client[DB_NAME]
+    client = MongoClient(config.MONGO_URI)
+    db = client[config.DB_NAME] 
     
-    # Scheduler จะอ่านจาก Collection นี้
-    # **หมายเหตุ**: คุณต้องสร้าง Collection นี้และใส่ข้อมูล (IP, user, pass) เองใน Mongo Compass
-    router_collection = db.routers 
+    # 2. ชี้ไปที่ Collection ที่ Web App บันทึกไว้
+    targets_collection = db.targets 
     
-    print(f"(Scheduler-DB) เชื่อมต่อ MongoDB ที่ {DB_NAME} สำเร็จ")
+    print(f"(Scheduler) เชื่อมต่อ MongoDB ที่ {config.DB_NAME} สำเร็จ")
 except Exception as e:
-    print(f"!!! [Error] (Scheduler-DB) ไม่สามารถเชื่อมต่อ MongoDB: {e}")
+    print(f"!!! [Scheduler Error] ไม่สามารถเชื่อมต่อ MongoDB: {e}")
+    # ถ้าเชื่อมต่อไม่ได้ ให้ใช้ collection จำลอง (ป้องกันการล่ม)
+    class MockCollection:
+        def find(self, *args, **kwargs):
+            return []
+    targets_collection = MockCollection()
 
-def get_all_routers():
+
+def get_all_targets():
     """
-    ดึงข้อมูล Router (IP, user, pass) ทั้งหมดจาก Collection 'routers'
+    ดึงข้อมูล Target ทั้งหมดจาก targets_collection
+    (ฟังก์ชันนี้คือสิ่งที่ main.py เรียกใช้)
     """
     try:
-        routers = list(router_collection.find({}, {"_id": 0})) # {} คือดึงทั้งหมด, {"_id": 0} คือไม่เอา _id
-        print(f"(Scheduler-DB) ดึงข้อมูล Router {len(routers)} รายการ")
-        return routers
+        # 3. คืนค่าเป็น List of dicts
+        return list(targets_collection.find({}, {"_id": 0}))
     except Exception as e:
-        print(f"!!! [Error] (Scheduler-DB) ไม่สามารถดึงข้อมูล Router: {e}")
+        print(f"!!! [Scheduler Error] ไม่สามารถดึงข้อมูลจาก targets_collection: {e}")
         return []
