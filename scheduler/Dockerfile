@@ -13,5 +13,9 @@ RUN pip install -r requirements.txt
 # 5. Copy โค้ดที่เหลือทั้งหมด
 COPY . .
 
+# บังคับให้ Python ส่ง output (stdout/stderr) ออกมาทันทีโดยไม่บัฟเฟอร์
+# ซึ่งจำเป็นมากเพื่อให้ 'docker logs' ทำงานได้ถูกต้อง
+ENV PYTHONUNBUFFERED=1
+
 # 6. คำสั่งเมื่อ Container เริ่มทำงาน (ให้รัน scheduler.py)
 CMD ["python", "scheduler.py"]

@@ -1,5 +1,5 @@
 services:
-  # 1. Web Service (ตามที่คุณ cat มา)
+  # 1. Web Service (Producer)
   web:
     build: ./web
     container_name: web
@@ -7,18 +7,18 @@ services:
       - "8080:8080"
     depends_on:
       - mongo
-      - rabbitmq # (แนะนำให้รอ rabbitmq ด้วย)
+      - rabbitmq
     networks:
       - app-net
     env_file:
-      - ./.env # (1) โหลดค่าทั้งหมดจาก .env (เช่น RABBITMQ_HOST)
+      - ./.env
     environment:
-      # (2) สร้าง/เขียนทับ Environment 
-      # โดยใช้ค่าที่โหลดจาก .env
       MONGO_URI: "mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/"
-      DB_NAME: "${DB_NAME}" # (ตามที่คุณระบุ)
+      DB_NAME: "${DB_NAME}"
+      RABBITMQ_HOST: "${RABBITMQ_HOST}" # (เพิ่มให้ web รู้จัก rabbitmq)
+    restart: unless-stopped # (แนะนำให้เพิ่ม)
 
-  # 2. Mongo Service (ต้องใช้ .env เพื่อสร้าง User)
+  # 2. Mongo Service (Database)
   mongo:
     image: mongo:6
     container_name: mongo
@@ -27,15 +27,15 @@ services:
     networks:
       - app-net
     env_file:
-      - ./.env # (1) โหลด .env
+      - ./.env
     environment:
-      # (2) ส่งค่าให้ MongoDB สร้าง User
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - mongo-data:/data/db
+    restart: unless-stopped # (แนะนำให้เพิ่ม)
 
-  # 3. RabbitMQ Service
+  # 3. RabbitMQ Service (Message Queue)
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -46,23 +46,45 @@ services:
     networks:
       - app-net
     env_file:
-      - ./.env # โหลด .env ด้วย (สำหรับ RABBITMQ_HOST)
-  # --- (เพิ่มส่วนนี้เข้าไป) ---
+      - ./.env
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    restart: unless-stopped # (แนะนำให้เพิ่ม)
+
+  # 4. Scheduler Service (Producer)
   scheduler:
-    build: ./scheduler          # 1. Build จากโฟลเดอร์ ./scheduler
+    build: ./scheduler
     container_name: scheduler
-    depends_on:               # 2. ต้องรันหลังจาก mongo และ rabbitmq พร้อม
+    depends_on:
       - mongo
       - rabbitmq
-    networks:                 # 3. เชื่อม Network เดียวกัน
+    networks:
       - app-net
-    env_file:                 # 4. ใช้ .env ไฟล์เดียวกัน
+    env_file:
       - ./.env
-    environment:              # 5. ส่งค่า Environment ให้อ่าน
+    environment:
       MONGO_URI: "mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/"
-      DB_NAME: "${DB_NAME}" # (ดึง DB_NAME จาก .env)
-      RABBITMQ_HOST: "${RABBITMQ_HOST}" # (ดึง RABBITMQ_HOST จาก .env)
+      DB_NAME: "${DB_NAME}"
+      RABBITMQ_HOST: "${RABBITMQ_HOST}"
+    restart: unless-stopped # (แนะนำให้เพิ่ม)
 
+  # 5. Worker Service (Consumer) --- (นี่คือส่วนที่เพิ่มเข้ามา) ---
+  worker:
+    build: ./worker            # 1. Build จากโฟลเดอร์ ./worker
+    container_name: worker
+    depends_on:                # 2. ต้องรันหลังจาก mongo และ rabbitmq พร้อม
+      - mongo
+      - rabbitmq
+    networks:                  # 3. เชื่อม Network เดียวกัน
+      - app-net
+    env_file:                  # 4. ใช้ .env ไฟล์เดียวกัน
+      - ./.env
+    environment:               # 5. ส่งค่า Environment ให้อ่าน (เหมือนกับตัวอื่น)
+      MONGO_URI: "mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/"
+      DB_NAME: "${DB_NAME}"
+      RABBITMQ_HOST: "${RABBITMQ_HOST}"
+    restart: unless-stopped    # 6. (แนะนำ) ให้มันเริ่มใหม่เองถ้าล้มเหลว
 
 networks:
   app-net:
@@ -70,4 +92,3 @@ networks:
 
 volumes:
   mongo-data:
-
