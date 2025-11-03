@@ -1,49 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-    <title>AutoPerf Project</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoPerf Dashboard</title>
+    <!-- 1. โหลด Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: sans-serif; margin: 2em; }
-        form { margin-bottom: 2em; }
-        ul { list-style: none; padding: 0; }
-        li { background: #f4f4f4; margin: 5px; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-        /* Style สำหรับฟอร์ม Delete ให้แสดงในบรรทัดเดียว */
-        form.delete-form { 
-            display: inline; 
-            margin: 0;
+        /* 2. ตั้งค่าฟอนต์ (Inter) */
+        body {
+            font-family: 'Inter', sans-serif;
         }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     </style>
 </head>
-<body>
-    <h1>AutoPerf - Network Performance Tester</h1>
+<body class="bg-gray-100 text-gray-900">
 
-    <form method="POST" action="/add">
-        <input name="ip_address" placeholder="ป้อน IP Address เป้าหมาย" required />
-        <button type="submit">เพิ่มเป้าหมาย และเริ่มทดสอบ</button>
-    </form>
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <h1 class="text-3xl font-bold mb-6 text-gray-800">AutoPerf Dashboard</h1>
 
-    <hr>
-
-    <h2>ผลการทดสอบ (ดึงจาก Database)</h2>
-    <ul>
-        {% for result in results %}
-            <li>
+        <!-- 3. ฟอร์มสำหรับเพิ่ม/อัปเดต Target -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4">เพิ่มหรืออัปเดตเป้าหมาย</h2>
+            <form method="POST" action="{{ url_for('add_target') }}" class="space-y-4">
                 <div>
-                    <strong>IP:</strong> 
-                    <a href="{{ url_for('show_detail', target_ip=result.ip) }}">
-                        {{ result.ip }}
-                    </a> | 
-                    <strong>Status:</strong> {{ result.status }} | 
-                    <strong>Bandwidth:</strong> {{ result.bandwidth }}
+                    <label for="ip_address" class="block text-sm font-medium text-gray-700">IP Address</label>
+                    <input type="text" id="ip_address" name="ip_address" placeholder="ป้อน IP Address เป้าหมาย" required 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
-                
-                <form method="POST" action="/delete" class="delete-form">
-                    <input type="hidden" name="ip_to_delete" value="{{ result.ip }}">
-                    <button type="submit">Delete</button>
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Username (SSH)</label>
+                    <input type="text" id="username" name="username" placeholder="ป้อน Username (สำหรับ SSH/Ansible)" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password (SSH)</label>
+                    <input type="password" id="password" name="password" placeholder="ป้อน Password (สำหรับ SSH/Ansible)" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button type="submit" 
+                        class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    บันทึกเป้าหมาย
+                </button>
+            </form>
+        </div>
+
+        <!-- 4. ตารางแสดงผลลัพธ์ -->
+        <h2 class="text-xl font-semibold mb-4">เป้าหมายทั้งหมด</h2>
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <ul class="divide-y divide-gray-200">
+                <!-- 5. วนลูปแสดงผล (ตามที่ app.py ส่งมา) -->
+                {% for result in results %}
+                <li class="p-4 flex flex-col sm:flex-row justify-between sm:items-center space-y-2 sm:space-y-0">
+                    <div class="flex-1 space-y-1">
+                        <!-- 5.1 Link ไปหน้า Detail -->
+                        <a href="{{ url_for('show_detail', target_ip=result.ip) }}" class="text-lg font-semibold text-blue-600 hover:underline">{{ result.ip }}</a>
+                        <div class="text-sm text-gray-600">
+                            <!-- 5.2 แสดง Status และ Bandwidth -->
+                            <span><strong>สถานะ:</strong> {{ result.status }}</span> | 
+                            <span><strong>แบนด์วิดท์ล่าสุด:</strong> {{ result.bandwidth }}</span>
+                        </div>
+                    </div>
+                    <!-- 5.3 ฟอร์มสำหรับลบ -->
+                    <form method="POST" action="{{ url_for('delete_target') }}" class="inline-block" onsubmit="return confirm('คุณแน่ใจหรือไม่ที่จะลบเป้าหมายนี้และประวัติทั้งหมด?');">
+                        <input type="hidden" name="ip_to_delete" value="{{ result.ip }}">
+                        <button type="submit" 
+                                class="bg-red-500 text-white text-sm font-medium py-2 px-3 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                            ลบ
+                        </button>
+                    </form>
+                </li>
+                {% else %}
+                <li class="p-4 text-center text-gray-500">ไม่พบข้อมูลเป้าหมาย (กรุณาเพิ่มเป้าหมายใหม่)</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 
 </body>
 </html>

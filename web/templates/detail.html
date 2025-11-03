@@ -1,33 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-    <title>Router Detail</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ประวัติการทดสอบ - {{ router_ip }}</title>
+    <!-- 1. โหลด Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 2. ตั้งค่าฟอนต์ (Inter) */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    </style>
 </head>
-<body>
-    <h1>Router: {{ router_ip }}</h1>
-    
-    <table border="1">
-        <tr>
-            <th>Timestamp</th>
-            <th>Interface</th>
-            <th>IP Address</th>
-            <th>Status</th>
-            <th>Protocol</th>
-        </tr>
-        {% for doc in interface_data %}
-            {% for intf in doc.interfaces %}
-            <tr>
-                <td>{{ doc.timestamp }}</td>
-                <td>{{ intf.interface }}</td>
-                <td>{{ intf.ip_address }}</td>
-                <td>{{ intf.status }}</td>
-                <td>{{ intf.proto }}</td>
-            </tr>
-            {% endfor %}
-        {% endfor %}
-    </table>
-    
-    <hr>
-    <a href="/"> &lt;&lt; กลับไปหน้าหลัก</a>
+<body class="bg-gray-100 text-gray-900">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+        
+        <!-- 3. ส่วนหัวและปุ่มย้อนกลับ -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">ประวัติการทดสอบ Iperf</h1>
+            <a href="{{ url_for('index') }}" 
+               class="bg-gray-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                &larr; กลับหน้าหลัก
+            </a>
+        </div>
+
+        <p class="text-xl text-gray-700 mb-6"><strong>เป้าหมาย (IP):</strong> {{ router_ip }}</p>
+
+        <!-- 4. ตารางแสดงประวัติ -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วัน/เวลา (UTC)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bandwidth (Mbps)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">โพรโทคอล</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ข้อผิดพลาด (ถ้ามี)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- 5. วนลูปแสดงผล (ตามที่ app.py ส่งมา) -->
+                        {% for item in iperf_history %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                {{ item.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                                <!-- 5.1 แสดงผลลัพธ์ (ตามโครงสร้างที่ Worker บันทึก) -->
+                                {% if item.test_data and item.test_data.get('end', {}).get('sum_received', {}).get('bits_per_second') %}
+                                    {{ (item.test_data.end.sum_received.bits_per_second / 1e6) | round(2) }} Mbps
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <!-- 5.2 แสดงโพรโทคอล -->
+                                {{ item.test_data.get('start', {}).get('test_start', {}).get('protocol', 'N/A') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">
+                                <!-- 5.3 แสดง Error -->
+                                {{ item.test_data.get('error', '') }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        {% if not iperf_history %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">ไม่พบประวัติการทดสอบสำหรับ IP นี้</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
