@@ -32,7 +32,10 @@ def run_ansible_and_iperf(ip, user, password):
     print(f"  [Ansible] ติดตั้งบน {ip} สำเร็จ")
 
     # --- ขั้นตอน B: รัน iPerf3 Client ---
-    iperf_cmd = ["iperf3", "-c", ip, "-J"] # -J = JSON Output
+    iperf_cmd = ["iperf3", "-c", ip, "-J"] # <-- นี่คือ TCP -J = JSON Output
+    # ⬇️ เปลี่ยนเป็นแบบนี้เพื่อทดสอบ UDP ⬇️
+    # (-u = UDP, -b 10M = ทดสอบที่ 10 Mbps)
+    # iperf_cmd = ["iperf3", "-c", ip, "-J", "-u", "-b", "10M"]
     
     print(f"  [iperf3] เริ่มทดสอบกับ {ip}...")
     process_iperf = subprocess.run(iperf_cmd, capture_output=True, text=True)

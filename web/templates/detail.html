@@ -16,60 +16,105 @@
 </head>
 <body class="bg-gray-100 text-gray-900">
 
-    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl"> <!-- ⬅️ ขยายความกว้างเล็กน้อย -->
         
         <!-- 3. ส่วนหัวและปุ่มย้อนกลับ -->
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-800">ประวัติการทดสอบ Iperf</h1>
             <a href="{{ url_for('index') }}" 
                class="bg-gray-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-                &larr; กลับหน้าหลัก
+               &larr; กลับหน้าหลัก
             </a>
         </div>
 
         <p class="text-xl text-gray-700 mb-6"><strong>เป้าหมาย (IP):</strong> {{ router_ip }}</p>
 
-        <!-- 4. ตารางแสดงประวัติ -->
+        <!-- 4. ตารางแสดงประวัติ (อัปเดตแล้ว) -->
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วัน/เวลา (UTC)</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bandwidth (Mbps)</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">โพรโทคอล</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ข้อผิดพลาด (ถ้ามี)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download (Mbps)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Upload (Mbps)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Protocol</th>
+                            <!-- <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jitter (ms)</th> -->
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loss / Retransmits</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ข้อผิดพลาด</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <!-- 5. วนลูปแสดงผล (ตามที่ app.py ส่งมา) -->
                         {% for item in iperf_history %}
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                {{ item.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                <!-- 5.1 แสดงผลลัพธ์ (ตามโครงสร้างที่ Worker บันทึก) -->
-                                {% if item.test_data and item.test_data.get('end', {}).get('sum_received', {}).get('bits_per_second') %}
-                                    {{ (item.test_data.end.sum_received.bits_per_second / 1e6) | round(2) }} Mbps
-                                {% else %}
-                                    N/A
-                                {% endif %}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                <!-- 5.2 แสดงโพรโทคอล -->
-                                {{ item.test_data.get('start', {}).get('test_start', {}).get('protocol', 'N/A') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                                <!-- 5.3 แสดง Error -->
-                                {{ item.test_data.get('error', '') }}
-                            </td>
-                        </tr>
+                            
+                            <!-- 5.1 ดึงข้อมูลสรุปมาเก็บในตัวแปรเพื่อง่ายต่อการอ่าน -->
+                            {% set data = item.test_data %}
+                            {% set protocol = data.get('start', {}).get('test_start', {}).get('protocol', 'N/A') %}
+                            {% set received = data.get('end', {}).get('sum_received', {}) %}
+                            {% set sent = data.get('end', {}).get('sum_sent', {}) %}
+                            {% set udp_sum = data.get('end', {}).get('sum', {}) %} <!-- สำหรับ Jitter/Loss -->
+
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {{ item.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                                </td>
+                                
+                                <!-- Download -->
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                                    {% if received.bits_per_second %}
+                                        {{ (received.bits_per_second / 1e6) | round(2) }}
+                                    {% else %} N/A {% endif %}
+                                </td>
+
+                                <!-- [ใหม่] Upload -->
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                                    {% if sent.bits_per_second %}
+                                        {{ (sent.bits_per_second / 1e6) | round(2) }}
+                                    {% else %} N/A {% endif %}
+                                </td>
+
+                                <!-- Protocol -->
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    {{ protocol }}
+                                </td>
+
+                                <!-- [ใหม่] Jitter (เฉพาะ UDP) -->
+                                <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    {% if protocol == 'UDP' and udp_sum.jitter_ms is defined %}
+                                        {{ "%.3f"|format(udp_sum.jitter_ms) }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td> -->
+
+                                <!-- [ใหม่] Loss (UDP) หรือ Retransmits (TCP) -->
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium
+                                    {% if (protocol == 'UDP' and udp_sum.lost_percent > 1) or (protocol == 'TCP' and sent.retransmits > 10) %}
+                                        text-red-600 <!-- เน้นสีแดงถ้าค่าสูง -->
+                                    {% else %}
+                                        text-green-600 <!-- สีเขียวถ้าค่าดี -->
+                                    {% endif %}">
+                                    
+                                    {% if protocol == 'TCP' %}
+                                        {{ sent.retransmits }} (Retransmits)
+                                    {% elif protocol == 'UDP' %}
+                                        {{ udp_sum.lost_percent | round(2) }} % (Loss)
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+
+                                <!-- Error (ถ้ามี) -->
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">
+                                    {{ item.test_data.get('error', '') }}
+                                </td>
+                            </tr>
                         {% endfor %}
 
                         {% if not iperf_history %}
                         <tr>
-                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">ไม่พบประวัติการทดสอบสำหรับ IP นี้</td>
+                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">ไม่พบประวัติการทดสอบสำหรับ IP นี้</td>
                         </tr>
                         {% endif %}
                     </tbody>
@@ -80,3 +125,4 @@
 
 </body>
 </html>
+
