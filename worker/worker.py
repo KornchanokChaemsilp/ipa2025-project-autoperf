@@ -13,9 +13,16 @@ def start_worker():
     print("🚀 [Worker] เริ่มการทำงาน...")
     while True:
         try:
+            credentials = pika.PlainCredentials(config.RABBITMQ_USER, config.RABBITMQ_PASS)
+
             connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host=config.RABBITMQ_HOST, heartbeat=600)
+                pika.ConnectionParameters(
+                    host=config.RABBITMQ_HOST,
+                    heartbeat=600,
+                    credentials=credentials # ⬅️ เพิ่มบรรทัดนี้!
+                )
             )
+            
             channel = connection.channel()
             
             channel.queue_declare(queue=config.QUEUE_NAME, durable=True)
