@@ -1,0 +1,73 @@
+services:
+  # 1. Web Service (ตามที่คุณ cat มา)
+  web:
+    build: ./web
+    container_name: web
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+      - rabbitmq # (แนะนำให้รอ rabbitmq ด้วย)
+    networks:
+      - app-net
+    env_file:
+      - ./.env # (1) โหลดค่าทั้งหมดจาก .env (เช่น RABBITMQ_HOST)
+    environment:
+      # (2) สร้าง/เขียนทับ Environment 
+      # โดยใช้ค่าที่โหลดจาก .env
+      MONGO_URI: "mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/"
+      DB_NAME: "${DB_NAME}" # (ตามที่คุณระบุ)
+
+  # 2. Mongo Service (ต้องใช้ .env เพื่อสร้าง User)
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - app-net
+    env_file:
+      - ./.env # (1) โหลด .env
+    environment:
+      # (2) ส่งค่าให้ MongoDB สร้าง User
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - mongo-data:/data/db
+
+  # 3. RabbitMQ Service
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app-net
+    env_file:
+      - ./.env # โหลด .env ด้วย (สำหรับ RABBITMQ_HOST)
+  # --- (เพิ่มส่วนนี้เข้าไป) ---
+  scheduler:
+    build: ./scheduler          # 1. Build จากโฟลเดอร์ ./scheduler
+    container_name: scheduler
+    depends_on:               # 2. ต้องรันหลังจาก mongo และ rabbitmq พร้อม
+      - mongo
+      - rabbitmq
+    networks:                 # 3. เชื่อม Network เดียวกัน
+      - app-net
+    env_file:                 # 4. ใช้ .env ไฟล์เดียวกัน
+      - ./.env
+    environment:              # 5. ส่งค่า Environment ให้อ่าน
+      MONGO_URI: "mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/"
+      DB_NAME: "${DB_NAME}" # (ดึง DB_NAME จาก .env)
+      RABBITMQ_HOST: "${RABBITMQ_HOST}" # (ดึง RABBITMQ_HOST จาก .env)
+
+
+networks:
+  app-net:
+    driver: bridge
+
+volumes:
+  mongo-data:
+
