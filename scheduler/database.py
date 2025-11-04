@@ -30,5 +30,6 @@ def get_all_targets():
         # 3. คืนค่าเป็น List of dicts
         return list(targets_collection.find({}, {"_id": 0}))
     except Exception as e:
-        print(f"!!! [Scheduler Error] ไม่สามารถดึงข้อมูลจาก targets_collection: {e}")
+        print(f"!!! [Scheduler Error] \
+               ไม่สามารถดึงข้อมูลจาก targets_collection: {e}")
         return []

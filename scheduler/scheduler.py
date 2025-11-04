@@ -19,7 +19,8 @@ def job():
     targets = database.get_all_targets()
 
     if not targets:
-        print("--- (Scheduler) ไม่พบข้อมูล Router (ใน collection 'targets'), สิ้นสุดรอบ ---")
+        print("--- (Scheduler) ไม่พบข้อมูล Router \
+              (ใน collection 'targets'), สิ้นสุดรอบ ---")
         return
 
     # 2. ส่งข้อมูล Router (ทีละตัว) เข้า RabbitMQ
@@ -33,16 +34,19 @@ def job():
         # (ฟังก์ชันนี้จะใช้ Credentials ที่ถูกต้อง)
         producer.send_job_to_queue(job_data, IPERF_JOB_QUEUE)
 
-    print(f"--- (Scheduler) ส่ง Job ทั้งหมด {len(targets)} งาน, สิ้นสุดรอบ ---")
+    print(f"--- (Scheduler) ส่ง Job ทั้งหมด \
+          {len(targets)} งาน, สิ้นสุดรอบ ---")
 
 
 # --- ส่วน main (เหมือนเดิม) ---
 if __name__ == "__main__":
     # ตรวจสอบว่า config โหลดครบ
     if not config.QUEUE_NAME:
-        print("!!! [Scheduler Error] ไม่พบ QUEUE_NAME ใน config, กรุณาตรวจสอบ .env")
+        print("!!! [Scheduler Error] ไม่พบ QUEUE_NAME \
+              ใน config, กรุณาตรวจสอบ .env")
     else:
-        print(f"(Scheduler) เริ่มทำงาน... ตั้งค่างานทุก 10 วินาที (ส่งไปที่คิว: {IPERF_JOB_QUEUE})")
+        print(f"(Scheduler) เริ่มทำงาน... ตั้งค่างานทุก \
+              10 วินาที (ส่งไปที่คิว: {IPERF_JOB_QUEUE})")
 
         # ตั้งค่าให้ 'job()' ทำงานทุก 10 วินาที
         schedule.every(10).seconds.do(job)

@@ -9,7 +9,8 @@ def send_job_to_queue(job_data, queue_name):
     """
     try:
         # 1. สร้าง Credentials
-        credentials = pika.PlainCredentials(config.RABBITMQ_USER, config.RABBITMQ_PASS)
+        credentials = pika.PlainCredentials(config.RABBITMQ_USER, 
+                                            config.RABBITMQ_PASS)
 
         # 2. เชื่อมต่อโดยใช้ Credentials
         connection = pika.BlockingConnection(
@@ -35,7 +36,8 @@ def send_job_to_queue(job_data, queue_name):
         )
 
         print(
-            f"  [Scheduler] ส่ง Job ของ {job_data.get('ip')} ไปยังคิว '{queue_name}' สำเร็จ"
+            f"  [Scheduler] ส่ง Job ของ \
+                {job_data.get('ip')} ไปยังคิว '{queue_name}' สำเร็จ"
         )
         connection.close()
 
