@@ -53,11 +53,20 @@ def index():
             )
             if last_iperf and "test_data" in last_iperf:
                 r["status"] = "Finished"
-                r["bandwidth"] = (f"{last_iperf['test_data']
-                                .get('end', {}).get('sum_received', {})
-                                .get('bits_per_second', 0) / 1e6:.2f} \
-                                Mbps"
+
+                # ดึงค่า bits_per_second ออกมาใส่ตัวแปรเพื่อง่ายต่อการอ่านและดีบัก
+                # ใช้ .get() ซ้อนกันอย่างปลอดภัย พร้อมค่า default
+                bits_per_second = (
+                    last_iperf.get("test_data", {})
+                    .get("end", {})
+                    .get("sum_received", {})
+                    .get("bits_per_second", 0)
                 )
+
+                # คำนวณและจัดรูปแบบ f-string ในบรรทัดที่ชัดเจน
+                bandwidth_mbps = bits_per_second / 1_000_000  # 1e6
+                r["bandwidth"] = f"{bandwidth_mbps:.2f} Mbps"
+
             # ⬇️ [แก้ไข] เปลี่ยนการแสดงสถานะเล็กน้อย
             elif r.get("status") == "Waiting for Scheduler":
                 r["status"] = "Waiting..."
@@ -131,9 +140,8 @@ def show_detail(target_ip):
     """
     try:
         iperf_history = list(
-            iperf_results_collection.find({"router_ip": target_ip}).sort(
-                "timestamp", -1
-            )
+            iperf_results_collection.find({"router_ip": target_ip})
+                                    .sort("timestamp", -1)
         )  # เรียงจากใหม่ไปเก่า
 
         return render_template(
