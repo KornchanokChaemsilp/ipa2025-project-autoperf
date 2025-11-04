@@ -42,10 +42,10 @@ jobs:
 
     - name: Build & Push Docker Images
       run: |
-        docker build -t kornchanokchaemsilp/autoperf-worker:latest ./worker
-        docker build -t kornchanokchaemsilp/autoperf-scheduler:latest ./scheduler
-        docker build -t kornchanokchaemsilp/autoperf-web:latest ./web
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}/autoperf-worker:latest ./worker
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}/autoperf-scheduler:latest ./scheduler
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}/autoperf-web:latest ./web
 
-        docker push kornchanokchaemsilp/autoperf-worker:latest
-        docker push kornchanokchaemsilp/autoperf-scheduler:latest
-        docker push kornchanokchaemsilp/autoperf-web:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}autoperf-worker:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}autoperf-scheduler:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}/autoperf-web:latest
