@@ -55,8 +55,8 @@ def index():
                 r["status"] = "Finished"
                 r["bandwidth"] = (
                     f"{last_iperf['test_data'].get('end',
-                         {}).get('sum_received', {}).get(
-                         'bits_per_second', 0) / 1e6:.2f} Mbps"
+                     {}).get('sum_received', {}).get(
+                     'bits_per_second', 0) / 1e6:.2f} Mbps"
                 )
             # ⬇️ [แก้ไข] เปลี่ยนการแสดงสถานะเล็กน้อย
             elif r.get("status") == "Waiting for Scheduler":
@@ -142,8 +142,8 @@ def show_detail(target_ip):
     except Exception as e:
         print(f"Error in show_detail: {e}")
         return render_template("detail.html",
-                           router_ip=target_ip,
-                            iperf_history=[])
+        router_ip=target_ip,
+        iperf_history=[])
 
 
 if __name__ == "__main__":
