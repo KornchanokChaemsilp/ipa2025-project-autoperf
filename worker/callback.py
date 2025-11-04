@@ -6,13 +6,14 @@ import datetime
 from database import db_collection
 from ansible import run_ansible_and_iperf
 
+
 def callback(ch, method, properties, body):
     """
     ฟังก์ชันที่จะถูกเรียกอัตโนมัติเมื่อมี "งาน" เข้ามาจาก RabbitMQ
     """
     data = {}
     try:
-        data = json.loads(body.decode('utf-8'))
+        data = json.loads(body.decode("utf-8"))
         ip = data.get("ip")
         user = data.get("username")
         password = data.get("password")
@@ -30,7 +31,7 @@ def callback(ch, method, properties, body):
         db_entry = {
             "router_ip": ip,
             "timestamp": datetime.datetime.now(datetime.timezone.utc),
-            "test_data": iperf_result_json
+            "test_data": iperf_result_json,
         }
         db_collection.insert_one(db_entry)
         print(f"✅ [Worker] บันทึกผลของ {ip} ลง MongoDB เรียบร้อย")
@@ -44,5 +45,5 @@ def callback(ch, method, properties, body):
         print(f"❌ [Worker] ❗❗ เกิดข้อผิดพลาดในการประมวลผล {data.get('ip')}: {e}")
         ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
         print(f"  [Nack] ส่งงาน {data.get('ip')} ที่ล้มเหลวทิ้ง")
-    
+
     print(f"--- ☕ [Worker] รองานต่อไป ---")

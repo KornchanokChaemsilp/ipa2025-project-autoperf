@@ -1,7 +1,7 @@
 import os
 
 # 1. อ่านค่า Config ทั้งหมดจาก Environment Variables (ที่ .env ส่งมา)
-MONGO_URI = os.environ.get("MONGO_URI") 
+MONGO_URI = os.environ.get("MONGO_URI")
 DB_NAME = os.environ.get("DB_NAME")
 RABBITMQ_HOST = os.environ.get("RABBITMQ_HOST")
 
