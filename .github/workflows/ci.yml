@@ -42,10 +42,10 @@ jobs:
 
     - name: Build & Push Docker Images
       run: |
-        docker build -t KornchanokChaemsilp/autoperf-worker:latest ./worker
-        docker build -t KornchanokChaemsilp/autoperf-scheduler:latest ./scheduler
-        docker build -t KornchanokChaemsilp/autoperf-web:latest ./web
+        docker build -t kornchanokchaemsilp/autoperf-worker:latest ./worker
+        docker build -t kornchanokchaemsilp/autoperf-scheduler:latest ./scheduler
+        docker build -t kornchanokchaemsilp/autoperf-web:latest ./web
 
-        docker push KornchanokChaemsilp/autoperf-worker:latest
-        docker push KornchanokChaemsilp/autoperf-scheduler:latest
-        docker push KornchanokChaemsilp/autoperf-web:latest
+        docker push kornchanokchaemsilp/autoperf-worker:latest
+        docker push kornchanokchaemsilp/autoperf-scheduler:latest
+        docker push kornchanokchaemsilp/autoperf-web:latest
