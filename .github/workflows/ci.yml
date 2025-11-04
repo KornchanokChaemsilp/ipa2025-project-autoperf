@@ -46,6 +46,6 @@ jobs:
         docker build -t ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}/autoperf-scheduler:latest ./scheduler
         docker build -t ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}/autoperf-web:latest ./web
 
-        docker push ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}autoperf-worker:latest
-        docker push ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}autoperf-scheduler:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}/autoperf-worker:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}/autoperf-scheduler:latest
         docker push ${{ secrets.DOCKERHUB_USERNAME_LOOKKAEW }}/autoperf-web:latest
