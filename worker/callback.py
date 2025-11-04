@@ -42,8 +42,10 @@ def callback(ch, method, properties, body):
 
     except Exception as e:
         # --- 6. ถ้าล้มเหลว ---
-        print(f"❌ [Worker] ❗❗ เกิดข้อผิดพลาดในการประมวลผล \
-              {data.get('ip')}: {e}")
+        print(
+            f"❌ [Worker] ❗❗ เกิดข้อผิดพลาดในการประมวลผล \
+              {data.get('ip')}: {e}"
+        )
         ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
         print(f"  [Nack] ส่งงาน {data.get('ip')} ที่ล้มเหลวทิ้ง")
 

@@ -32,8 +32,7 @@ def start_worker():
             channel.basic_qos(prefetch_count=1)
 
             # ผูกกับฟังก์ชัน callback ที่เรา import เข้ามา
-            channel.basic_consume(queue=config.QUEUE_NAME, 
-                                  on_message_callback=callback)
+            channel.basic_consume(queue=config.QUEUE_NAME, on_message_callback=callback)
 
             print(
                 f"✅ [Worker] เชื่อมต่อ RabbitMQ สำเร็จ \
@@ -42,8 +41,10 @@ def start_worker():
             channel.start_consuming()
 
         except pika.exceptions.AMQPConnectionError as e:
-            print(f"❌ [Worker] ไม่สามารถเชื่อมต่อ RabbitMQ: \
-                  {e}. กำลังลองใหม่ใน 5 วินาที...")
+            print(
+                f"❌ [Worker] ไม่สามารถเชื่อมต่อ RabbitMQ: \
+                  {e}. กำลังลองใหม่ใน 5 วินาที..."
+            )
             time.sleep(5)
         except KeyboardInterrupt:
             print("🛑 [Worker] กำลังปิดการทำงาน...")
