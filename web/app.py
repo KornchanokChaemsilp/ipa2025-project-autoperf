@@ -54,7 +54,7 @@ def index():
             if last_iperf and "test_data" in last_iperf:
                 r["status"] = "Finished"
 
-                # ดึงค่า bits_per_second ออกมาใส่ตัวแปรเพื่อง่ายต่อการอ่านและดีบัก
+                # ดึงค่า bits_per_second ออกมาใส่ตัวแปรง่ายต่อการอ่านและดีบัก
                 # ใช้ .get() ซ้อนกันอย่างปลอดภัย พร้อมค่า default
                 bits_per_second = (
                     last_iperf.get("test_data", {})
@@ -150,8 +150,8 @@ def show_detail(target_ip):
     except Exception as e:
         print(f"Error in show_detail: {e}")
         return render_template("detail.html",
-                                router_ip=target_ip,
-                                iperf_history=[])
+                            router_ip=target_ip,
+                            iperf_history=[])
 
 
 if __name__ == "__main__":
