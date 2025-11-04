@@ -32,8 +32,7 @@ def start_worker():
             channel.basic_qos(prefetch_count=1)
 
             # ผูกกับฟังก์ชัน callback ที่เรา import เข้ามา
-            channel.basic_consume(queue=config.QUEUE_NAME,
-                                  on_message_callback=callback)
+            channel.basic_consume(queue=config.QUEUE_NAME, on_message_callback=callback)
 
             print(
                 f"✅ [Worker] เชื่อมต่อ RabbitMQ สำเร็จ \

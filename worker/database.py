@@ -8,8 +8,7 @@ def get_mongo_connection():
     """เชื่อมต่อ MongoDB (พยายามต่อใหม่เรื่อยๆ ถ้าล่ม)"""
     while True:
         try:
-            client = MongoClient(config.MONGO_URI,
-                                 serverSelectionTimeoutMS=5000)
+            client = MongoClient(config.MONGO_URI, serverSelectionTimeoutMS=5000)
             client.server_info()  # ทดสอบการเชื่อมต่อ
             mydb = client[config.DB_NAME]
             mycol_results = mydb["iperf3_results"]
