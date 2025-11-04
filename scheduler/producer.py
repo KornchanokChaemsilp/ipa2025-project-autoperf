@@ -10,7 +10,7 @@ def send_job_to_queue(job_data, queue_name):
     try:
         # 1. สร้าง Credentials
         credentials = pika.PlainCredentials(config.RABBITMQ_USER,
-                                         config.RABBITMQ_PASS)
+                                            config.RABBITMQ_PASS)
 
         # 2. เชื่อมต่อโดยใช้ Credentials
         connection = pika.BlockingConnection(

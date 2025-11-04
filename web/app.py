@@ -150,8 +150,8 @@ def show_detail(target_ip):
     except Exception as e:
         print(f"Error in show_detail: {e}")
         return render_template("detail.html",
-                                router_ip=target_ip,
-                                iperf_history=[])
+                            router_ip=target_ip,
+                            iperf_history=[])
 
 
 if __name__ == "__main__":
