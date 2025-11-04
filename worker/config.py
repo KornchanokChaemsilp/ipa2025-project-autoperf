@@ -13,8 +13,11 @@ QUEUE_NAME = "iperf_job_queue"  # ชื่อคิวที่เราจะ�
 
 def validate_config():
     """ตรวจสอบว่าตั้งค่า Environment Variables ที่จำเป็นครบ"""
-    if not all([MONGO_URI, DB_NAME, RABBITMQ_HOST, RABBITMQ_USER, RABBITMQ_PASS]):
+    if not all([MONGO_URI, DB_NAME, RABBITMQ_HOST,
+                 RABBITMQ_USER, RABBITMQ_PASS]):
         print(
-            "❌ [Worker] Error: MONGO_URI, DB_NAME, RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, และ RABBITMQ_DEFAULT_PASS ต้องถูกตั้งค่า"
+            "❌ [Worker] Error: MONGO_URI, DB_NAME, \
+                RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, \
+                    และ RABBITMQ_DEFAULT_PASS ต้องถูกตั้งค่า"
         )
         sys.exit(1)

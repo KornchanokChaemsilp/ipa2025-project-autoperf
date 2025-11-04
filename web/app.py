@@ -15,7 +15,8 @@ DB_NAME = os.environ.get("DB_NAME")
 
 # ⬇️ [แก้ไข] ปรับการตรวจสอบ ENV
 if not all([MONGO_URI, DB_NAME]):
-    print("!!! [Error] ไม่พบ Environment Variables ที่จำเป็น (MONGO_URI, DB_NAME)")
+    print("!!! [Error] ไม่พบ Environment Variables \
+           ที่จำเป็น (MONGO_URI, DB_NAME)")
 
 try:
     client = MongoClient(MONGO_URI)
@@ -53,7 +54,9 @@ def index():
             if last_iperf and "test_data" in last_iperf:
                 r["status"] = "Finished"
                 r["bandwidth"] = (
-                    f"{last_iperf['test_data'].get('end', {}).get('sum_received', {}).get('bits_per_second', 0) / 1e6:.2f} Mbps"
+                    f"{last_iperf['test_data'].get('end', {}).get( \
+                        'sum_received', {}).get('bits_per_second', \
+                                                 0) / 1e6:.2f} Mbps"
                 )
             # ⬇️ [แก้ไข] เปลี่ยนการแสดงสถานะเล็กน้อย
             elif r.get("status") == "Waiting for Scheduler":
@@ -138,7 +141,8 @@ def show_detail(target_ip):
         )
     except Exception as e:
         print(f"Error in show_detail: {e}")
-        return render_template("detail.html", router_ip=target_ip, iperf_history=[])
+        return render_template("detail.html", \
+                               router_ip=target_ip, iperf_history=[])
 
 
 if __name__ == "__main__":

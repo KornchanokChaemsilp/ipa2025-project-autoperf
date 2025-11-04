@@ -22,7 +22,8 @@ def run_ansible_and_iperf(ip, user, password):
         f"{ip},",
         playbook_path,
         "--extra-vars",
-        f"ansible_user={user} ansible_ssh_pass={password} ansible_become_pass={password}",
+        f"ansible_user={user} ansible_ssh_pass={password} \
+            ansible_become_pass={password}",
     ]
 
     print(f"  [Ansible] ติดตั้ง/เริ่ม iperf3 server บน {ip}...")
@@ -32,7 +33,8 @@ def run_ansible_and_iperf(ip, user, password):
 
     if process_ansible.returncode != 0:
         print(
-            f"❌ [Ansible] ล้มเหลวสำหรับ {ip}:\n{process_ansible.stdout}\n{process_ansible.stderr}"
+            f"❌ [Ansible] ล้มเหลวสำหรับ {ip}:\n \
+                {process_ansible.stdout}\n{process_ansible.stderr}"
         )
         raise Exception(f"Ansible failed: {process_ansible.stderr}")
 
